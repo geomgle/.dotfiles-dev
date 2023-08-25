@@ -1,0 +1,43 @@
+# System
+alias 8='ls -alhtr --color=auto'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias mkdir="mkdir -pv"
+alias resh="source ~/.bashrc"
+alias vi="nvim"
+alias vimdiff="nvim -d"
+alias tmux="tmux -u -2"
+alias as="pacman -Ss"
+alias aq="pacman -Q | grep"
+# if user is not root, pass all commands via sudo
+if [ $UID -ne 0 ]; then
+    alias update='sudo pacman -Syu'
+    alias ai="sudo pacman -S"
+    alias ay="sudo pacman -S --noconfirm"
+    alias ar="yes | sudo pacman -Rcns"
+    alias yi="yes | paru -S"
+    alias yr="paru -Rs"
+    alias ys="paru -Ss"
+    alias reboot='sudo reboot now'
+    alias svi="sudo -E nvim"
+    alias rm="sudo rm -rf"
+    alias ctl="sudo systemctl"
+    alias uctl="systemctl --user"
+else
+    alias update='pacman -Syy'
+    alias ai="pacman -S"
+    alias ay="pacman -S --noconfirm"
+    alias ar="yes | pacman -Rcns"
+    alias reboot='reboot now'
+    alias rm="rm -rf"
+    alias ctl="systemctl"
+fi
+pk () {
+    ps -eaf | grep $1 | grep -v grep | awk -F" " 'system("kill -9 "$2"")'
+    
+}
+
+# File
+alias +o="sudo chown -R $USER:$USER"
+alias +x="chmod +x"
