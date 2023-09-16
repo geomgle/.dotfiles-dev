@@ -2,6 +2,14 @@ local M = {}
 
 local loop = vim.loop
 
+-- Define the function that will "auto-hit" enter
+-- This function can be useed for any command result that needs to be confirmed
+M.nvim_exec = function(cmd)
+  vim.api.nvim_exec(cmd, false)
+  -- Simulate pressing "enter" by sending the keys to Neovim
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<cr>", true, true, true), "n", true)
+end
+
 -- This function moves the cursor to the first floating window that is focusable and not relative.
 M.goto_first_float = function()
   -- Iterating through all the windows of the current tabpage

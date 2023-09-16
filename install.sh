@@ -32,11 +32,3 @@ echo yes; echo yes; echo no | ~/.fzf/install
 # Bash-git-prompt
 git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1
 
-# Nvim plugins install
-nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
-
-# Make vim colorscheme correct
-find ~/.local/share/nvim/site/pack/packer/start/nightfox.nvim/. -maxdepth 1 ! -name ".git" -exec rm -rf {} \;
-stow colors
-
-
