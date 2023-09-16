@@ -1,0 +1,222 @@
+# https://github.com/lmburns/dotfiles/blob/master/.config/lf/lfrc
+
+# Setting
+set shell bash
+set shellopts '-eu'
+set ratios 3:5
+set drawbox true
+set scrolloff 10
+set hidden
+set number
+set relativenumber
+set icons true
+set info size
+set ifs "\n"
+set filesep "\n"
+set previewer ~/.config/lf/previewer.sh
+set cleaner ~/.config/lf/clear_img.sh
+
+set reverse
+set sortby time
+set timefmt '2006-01-02 15:04:05'
+
+# Bindings
+# Remove some defaults
+map m
+map o
+map c
+map e
+map f
+map i
+map r
+map s
+map space
+map <c-d>
+map <esc>
+
+
+# Key bindings
+map <c-d>   quit
+map <f-4>   quit
+map <enter> open
+map .       set hidden!
+map d       trash
+map D       del
+map p       paste
+map x       cut
+map y       copy
+map m       rename
+map M       bulk-rename
+map v       :toggle; down
+map V       invert
+map s       search
+
+map f       glob-select-wrapper
+map a       add
+map c       shellcmd
+map z       unarchive
+map U       unselect
+map <esc>   cmd-escape
+map r       :reload; unselect; clear
+map I       ink
+map i       exif
+
+# Movement
+map t       half-up
+map <space> half-down
+map <tab>   jump-next
+map <c-o>   jump-prev
+map <c-t>   fzf_jump
+map gh      cd ~
+map gr      cd /
+map gp      cd ~/dev/python
+map gd      cd ~/.dotfiles
+map gD      cd ~/Downloads
+map gc      cd ~/.config
+
+# Commands
+cmd open ${{
+    owner="$(stat -c '%U' $(pwd))"
+
+    case $(file --mime-type "$f" -bL) in
+        application/pdf) zathura "$f";;
+        image/gif|png) setsid -f mpv $f -quiet >/dev/null 2>&1;;
+        video/*) setsid -f mpv --sub-file=$"{f%.*}".srt $f -quiet >/dev/null 2>&1 ;;
+        image/*) feh -Smtime --auto-zoom --draw-exif --image-bg "#181818" --start-at "$f" >/dev/null 2>&1;;
+        application/vnd.openxmlformats-officedocument.spreadsheetml.sheet|application/octet-stream|application/vnd.oasis.opendocument.spreadsheet|application/vnd.oasis.opendocument.spreadsheet-template) setsid -f et $f >/dev/null 2>&1 ;;
+        text/*|application/*)  [ "$owner" = "root" ] && sudo -E $EDITOR "$f" || $EDITOR "$f";;
+        *) for file in $fx; do xdg-open $file > /dev/null 2> /dev/null & done;;
+    esac
+}}
+
+cmd moveto ${{
+	clear; tput cup $(($(tput lines)/3)); tput bold
+	set -f
+	clear; echo "Move to where?"
+	dest="$(cut -d'	' -f2- ${XDG_CONFIG_HOME:-$HOME/.config}/directories | fzf | sed 's|~|$HOME|' )" &&
+	if [ -n "$dest" ]; then
+		for x in $fx; do
+			eval mv -iv \"$x\" \"$dest\"
+		done &&
+		notify-send "🚚 File(s) moved." "File(s) moved to $dest."
+	fi
+}}
+
+cmd exif ${{ 
+  comment="$(exiftool -Parameters $f | cut -c35-)"
+  notify-send $comment
+}}
+
+cmd add ${{
+  owner="$(stat -c '%U' $(pwd))"
+
+  printf $(pwd) 
+  printf "/" 
+  read ans
+  if [[ ${ans##*/} = "" ]]; then
+    printf "Directory name: "
+    if [[ "$owner" = "root" ]]; then
+      sudo mkdir -pv $ans
+    else
+      mkdir -pv $ans
+    fi
+    lf -remote "send $id cd \"$ans\""
+  else
+    if [[ "$owner" = "root" ]]; then
+      sudo -E $EDITOR $ans 
+      touch $ans
+    else
+      $EDITOR $ans 
+      touch $ans
+    fi
+  fi
+}}
+
+cmd del ${{
+  printf "Delete file(s)? (y/n): "
+  read ans
+  if [[ $ans = "y" ]]; then
+      for file in "$fx"
+      do
+      sudo rm -rf $file
+      done
+      lf -remote 'send reload'
+  fi
+}}
+
+# Shell but with output shown
+cmd shellcmd ${{
+  printf "Shell command: \n"
+  read ans
+  printf "$(BASH_ENV=~/.bashrc bash -c $ans)"
+  printf "\n"
+  printf "press <enter> key to continue\n"
+  read ans
+}}
+
+cmd chmod ${{
+  printf "Mode: "
+  read ans
+
+  for file in "$fx"
+  do
+    sudo chmod $ans $file
+  done
+
+  lf -remote 'send reload'
+}}
+
+# Select files based on glob filter
+cmd glob-select-wrapper ${{
+  printf "Select files with names that contain: "
+  read -r filter_expr
+  lf -remote "send $id unselect"
+  lf -remote "send $id glob-select *$filter_expr*"
+}}
+
+cmd fzf_jump ${{
+  res="$(find . -maxdepth 3 | fzf --reverse --header='Jump to location')"
+  if [ -f "$res" ]; then
+    cmd="select"
+  elif [ -d "$res" ]; then
+    cmd="cd"
+  fi
+  lf -remote "send $id $cmd \"$res\""
+}}
+
+cmd ink ${{
+  i3-msg exec "inkscape \"$f\" --class popup"
+}}
+
+cmd trash %set -f; mv $fx ~/.trash
+
+# Archive binding
+cmd unarchive ${{
+  case "$f" in
+      *.zip) unzip "$f" ;;
+      *.tar.gz) tar -xzvf "$f" ;;
+      *.tar.bz2) tar -xjvf "$f" ;;
+      *.tar) tar -xvf "$f" ;;
+      *) echo "Unsupported format" ;;
+  esac
+}}
+
+cmd bulk-rename ${{
+    old="$(mktemp)"
+    new="$(mktemp)"
+    [ -n "$fs" ] || fs="$(ls)"
+    printf '%s\n' "$fs" > "$old"
+    printf '%s\n' "$fs" > "$new"
+    $EDITOR "$new"
+    [ "$(wc -l "$new")" -ne "$(wc -l "$old")" ] && exit
+    paste "$old" "$new" | while IFS=$(printf "\t") read -r src dst; do
+        if [ "$src" = "$dst" ] || [ -e "$dst" ]; then
+            continue
+        fi
+        mv -- "$src" "$dst"
+    done
+    rm -- "$old" "$new"
+    lf -remote "send $id unselect"
+}}
+
+

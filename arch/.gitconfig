@@ -1,0 +1,39 @@
+[core]
+	editor = /usr/bin/nvim
+    excludesfile = ~/.config/git/gitignore
+[http]
+	sslVerify = false
+[credential]
+	helper = store
+[user]
+	name = geomgle
+	email = eunjin.sul@gmail.com
+[alias]
+    ac = !git add -A && git commit -m "_" --allow-empty
+    co = checkout
+    wl = worktree list
+    wa = worktree add
+    wr = worktree remove
+    rb = rebase -i
+    st = status
+    cm = commit
+    pbd = push origin --delete
+    ph = push origin HEAD
+    pb = push --set-upstream origin 
+    lg = log --graph --abbrev-commit --decorate --format=format:'%C(cyan)%h%C(reset) - %C(green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(yellow)%d%C(reset)' --all
+    ad = add
+    tg = tag -n
+    df = diff
+    br = branch
+    bd = branch -D
+    re = remote
+[pull]
+	rebase = true
+[rebase]
+	autoStash = true
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+
