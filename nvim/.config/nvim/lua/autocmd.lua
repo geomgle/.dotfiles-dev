@@ -26,11 +26,6 @@ vim.api.nvim_create_autocmd(
   }
 )
 
--- Ibus can toggle input method by itself, so this autocmd is not needed.
--- Create an autocmd that is triggered when leaving insert mode.
--- The callback function is set to 'toggle_input_method'.
-vim.api.nvim_create_autocmd("InsertLeave", {callback = require("utils").toggle_input_method})
-
 --- Sets up an autocmd to highlight text after a yank operation
 vim.api.nvim_create_autocmd(
   "TextYankPost",
@@ -56,10 +51,3 @@ vim.cmd [[
   inoremap <special> <expr> <Esc>[200~ XTermPasteBegin()
 ]]
 
--- Nice mappings for quickfix window. nvim_create_autocmd is not working with
--- fzf-lua.
--- vim.cmd [[
---  au FileType qf map D <cmd>lua require("utils").remove_qf_item()<cr>
---  au FileType qf map K [f
---  au FileType qf map J ]f
--- ]]

@@ -12,7 +12,6 @@ vim.g.VM_maps = {
 }
 
 -- Basic
-vim.cmd.colorscheme("nightfox")
 vim.opt.shell = "/bin/bash"
 vim.opt.termguicolors = true
 vim.opt.fileencodings = "utf-8,euc-kr"

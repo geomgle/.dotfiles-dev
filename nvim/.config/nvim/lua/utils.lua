@@ -1,7 +1,6 @@
 local M = {}
 
 local loop = vim.loop
-local ts_utils = require "nvim-treesitter.ts_utils"
 
 -- This function moves the cursor to the first floating window that is focusable and not relative.
 M.goto_first_float = function()
@@ -88,25 +87,6 @@ M.print_table = function(table)
 
   for k, v in pairs(table) do
     print(k .. ": " .. tostring(v))
-  end
-end
-
--- Prints a node, and optionally its children
--- @param node The node to print
--- @param show_child Whether or not to print the node's children
-M.print_node = function(node, show_child)
-  if node ~= nil then
-    print("Current node type: " .. node:type())
-    M.print_table(ts_utils.get_node_text(node, 0))
-    if show_child then
-      print("Child: ")
-      for ch in node:iter_children() do
-        print("Type: " .. ch:type())
-        M.print_table(ts_utils.get_node_text(ch, 0))
-      end
-    end
-  else
-    print("node is empty")
   end
 end
 
