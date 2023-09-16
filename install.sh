@@ -21,6 +21,7 @@ mkdir -p ~/.config/nvim
 mkdir -p ~/.virtualenvs
 
 # Stow configs
+rm ../.bash* ../.git*
 stow arch
 stow lf
 stow nvim
