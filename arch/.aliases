@@ -51,6 +51,38 @@ gc () {
     git clone $@ $repo
 }
 
+# Python
+alias py="python3"
+alias pyreq="python3 -m pip freeze > requirements.txt"
+alias deact="deactivate && tmux set-environment -r VENV"
+pi () {
+    if [[ -z "${VIRTUAL_ENV}" ]]; then
+        python3 -m pip install --break-system-packages --editable $@
+    else
+        python3 -m pip install $@
+    fi
+}
+act () {
+    [[ -n "$1" ]] && local env="$1" || local env=$(basename "$PWD")
+    tmux set-environment VENV $env
+    eval $(tmux show-environment VENV) 
+    source ~/.virtualenvs/$env/bin/activate
+}
+venv () {
+    local version=$([ -z "$1" ] && echo "3.10" || echo "$1")
+    local env=$(basename "$PWD")
+    cd ~/.virtualenvs
+    python"$version" -m venv $env 
+    act $env 
+    cd -
+}
+renv () {
+    cd ~/.virtualenvs
+    rm $1
+    cd -
+}
+
+
 
 
 # Etc
